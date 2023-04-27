@@ -1,0 +1,22 @@
+#!/bin/bash
+# Author: Estela ad Astra <estela.moe>
+# License: GPL3
+
+traceroute -I $1 | while read line; do
+   ip=$(grep -E '^ *[0-9]' <<<"$line" | grep -Eo '\(.*\)' | sed 's/[()]//g')
+   if test ! -z "$ip"; then
+      geoip="$(curl -s -A Mozilla 'https://api.ip.sb/geoip/'$ip)"
+      asn="$(jq -r '.asn' <<<"$geoip")"
+      test "$asn" = null && asn='' || asn="AS${asn} "
+      city="$(jq -r '.city' <<<"$geoip")"
+      test "$city" = null && city='' || city="${city},"
+      region="$(jq -r '.region' <<<"$geoip")"
+      test "$region" = null && region='' || region="${region},"
+      country="$(jq -r '.country' <<<"$geoip")"
+      test "$country" = null && country='' || country="${country} "
+      org="$(jq -r '.organization' <<<"$geoip")"
+      test "$org" = null && org=''
+   fi
+   echo "${line} ${asn}${city}${region}${country}${org}"
+   unset asn city region country org
+done
