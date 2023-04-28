@@ -2,6 +2,15 @@
 # Author: Estela ad Astra <estela.moe>
 # License: GPL3
 
+which traceroute >/dev/null 2>&1 || {
+   echo "traceroute not found."
+   exit 1
+}
+which jq >/dev/null 2>&1 || {
+   echo "jq not found."
+   exit 1
+}
+
 traceroute -I $1 | while read line; do
    ip=$(grep -E '^ *[0-9]' <<<"$line" | grep -Eo '\(.*\)' | sed 's/[()]//g')
    if test ! -z "$ip"; then
